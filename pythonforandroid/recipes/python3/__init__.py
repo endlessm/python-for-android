@@ -1,5 +1,6 @@
 import glob
 import sh
+import shutil
 import subprocess
 
 from multiprocessing import cpu_count
@@ -73,7 +74,7 @@ class Python3Recipe(TargetPythonRecipe):
         ('patches/py3.8.1.patch', version_starts_with("3.9"))
     ]
 
-    if sh.which('lld') is not None:
+    if shutil.which('lld') is not None:
         patches = patches + [
             ("patches/py3.7.1_fix_cortex_a8.patch", version_starts_with("3.7")),
             ("patches/py3.8.1_fix_cortex_a8.patch", version_starts_with("3.8")),
@@ -209,7 +210,7 @@ class Python3Recipe(TargetPythonRecipe):
         )
 
         env['LDFLAGS'] = env.get('LDFLAGS', '')
-        if sh.which('lld') is not None:
+        if shutil.which('lld') is not None:
             # Note: The -L. is to fix a bug in python 3.7.
             # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=234409
             env['LDFLAGS'] += ' -L. -fuse-ld=lld'
