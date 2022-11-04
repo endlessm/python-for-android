@@ -92,7 +92,7 @@ android {
             {% if args.sign -%}
             signingConfig signingConfigs.release
             {%- endif %}
-            {$ if args.enable_crashlytics_native_symbol_upload -%}
+            {% if args.enable_crashlytics_native_symbol_upload -%}
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
             }
