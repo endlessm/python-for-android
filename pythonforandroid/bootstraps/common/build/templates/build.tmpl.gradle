@@ -51,6 +51,11 @@ android {
         manifestPlaceholders = {{ args.manifest_placeholders}}
     }
 
+    tasks.whenTaskAdded { task ->
+        if (task.name.startsWith('assemble') && task.name != "assembleReleaseAndroidTest" && task.name != "assembleDebugAndroidTest") {
+            task.finalizedBy "uploadCrashlyticsSymbolFile" + task.name.substring('assemble'.length())
+        }
+    }
 	
 	packagingOptions {
         jniLibs {
@@ -87,6 +92,12 @@ android {
 
     buildTypes {
         debug {
+            {% if args.enable_crashlytics_native_symbol_upload -%}
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled true
+                strippedNativeLibsDir 'obj'
+            }
+            {%- endif %}
         }
         release {
             {% if args.sign -%}
@@ -95,8 +106,7 @@ android {
             {% if args.enable_crashlytics_native_symbol_upload -%}
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
-		strippedNativeLibsDir 'build/intermediates/stripped_native_libs/release/out/lib'
-          	unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/out/lib'
+		        strippedNativeLibsDir 'obj'
             }
             {%- endif %}
         }
