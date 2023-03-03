@@ -1,12 +1,11 @@
 import io
+import os
 import sys
-from os.path import join
 import pytest
 from unittest import mock
 from pythonforandroid.recipe import Recipe
 from pythonforandroid.toolchain import ToolchainCL
 from pythonforandroid.util import BuildInterruptingException
-from pythonforandroid.build import get_ndk_standalone
 
 
 def patch_sys_argv(argv):
@@ -70,21 +69,12 @@ class TestToolchainCL:
         with patch_sys_argv(argv), mock.patch(
             'pythonforandroid.build.get_available_apis'
         ) as m_get_available_apis, mock.patch(
-            'pythonforandroid.build.get_toolchain_versions'
-        ) as m_get_toolchain_versions, mock.patch(
-            'pythonforandroid.build.get_ndk_sysroot'
-        ) as m_get_ndk_sysroot, mock.patch(
             'pythonforandroid.toolchain.build_recipes'
         ) as m_build_recipes, mock.patch(
             'pythonforandroid.bootstraps.service_only.'
             'ServiceOnlyBootstrap.assemble_distribution'
         ) as m_run_distribute:
             m_get_available_apis.return_value = [27]
-            m_get_toolchain_versions.return_value = (['4.9'], True)
-            m_get_ndk_sysroot.return_value = (
-                join(get_ndk_standalone("/tmp/android-ndk"), "sysroot"),
-                True,
-            )
             tchain = ToolchainCL()
             assert tchain.ctx.activity_class_name == 'abc.myapp.android.CustomPythonActivity'
             assert tchain.ctx.service_class_name == 'xyz.myapp.android.CustomPythonService'
@@ -92,11 +82,6 @@ class TestToolchainCL:
             [mock.call('/tmp/android-sdk')],  # linux case
             [mock.call('/private/tmp/android-sdk')]  # macos case
         ]
-        for callargs in m_get_toolchain_versions.call_args_list:
-            assert callargs in [
-                mock.call("/tmp/android-ndk", mock.ANY),  # linux case
-                mock.call("/private/tmp/android-ndk", mock.ANY),  # macos case
-            ]
         build_order = [
             'hostpython3', 'libffi', 'openssl', 'sqlite3', 'python3',
             'genericndkbuild', 'setuptools', 'six', 'pyjnius', 'android',
@@ -152,3 +137,34 @@ class TestToolchainCL:
             assert expected_string in m_stdout.getvalue()
         # deletes static attribute to not mess with other tests
         del Recipe.recipes
+
+    def test_local_recipes_dir(self):
+        """
+        Checks the `local_recipes` attribute in the Context is absolute.
+        """
+        cwd = os.path.realpath(os.getcwd())
+        common_args = [
+            'toolchain.py',
+            'recommendations',
+        ]
+
+        # Check the default ./p4a-recipes becomes absolute.
+        argv = common_args
+        with patch_sys_argv(argv):
+            toolchain = ToolchainCL()
+        expected_local_recipes = os.path.join(cwd, 'p4a-recipes')
+        assert toolchain.ctx.local_recipes == expected_local_recipes
+
+        # Check a supplied relative directory becomes absolute.
+        argv = common_args + ['--local-recipes=foo']
+        with patch_sys_argv(argv):
+            toolchain = ToolchainCL()
+        expected_local_recipes = os.path.join(cwd, 'foo')
+        assert toolchain.ctx.local_recipes == expected_local_recipes
+
+        # An absolute directory should remain unchanged.
+        local_recipes = os.path.join(cwd, 'foo')
+        argv = common_args + ['--local-recipes={}'.format(local_recipes)]
+        with patch_sys_argv(argv):
+            toolchain = ToolchainCL()
+        assert toolchain.ctx.local_recipes == local_recipes

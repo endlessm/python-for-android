@@ -1,7 +1,6 @@
 from os.path import basename, dirname, exists, isdir, isfile, join, realpath, split
 import glob
 from shutil import rmtree
-from six import with_metaclass
 
 import hashlib
 from re import match
@@ -40,7 +39,7 @@ class RecipeMeta(type):
         return super().__new__(cls, name, bases, dct)
 
 
-class Recipe(with_metaclass(RecipeMeta)):
+class Recipe(metaclass=RecipeMeta):
     _url = None
     '''The address from which the recipe may be downloaded. This is not
     essential, it may be omitted if the source is available some other
@@ -123,8 +122,8 @@ class Recipe(with_metaclass(RecipeMeta)):
     """
 
     need_stl_shared = False
-    '''Some libraries or python packages may need to be linked with android's
-    stl. We can automatically do this for any recipe if we set this property to
+    '''Some libraries or python packages may need the c++_shared in APK.
+    We can automatically do this for any recipe if we set this property to
     `True`'''
 
     stl_lib_name = 'c++_shared'
@@ -135,24 +134,9 @@ class Recipe(with_metaclass(RecipeMeta)):
         starting from NDK r18 the `gnustl_shared` lib has been deprecated.
     '''
 
-    stl_lib_source = '{ctx.ndk_dir}/sources/cxx-stl/llvm-libc++'
-    '''
-    The source directory of the selected stl lib, defined in property
-    `stl_lib_name`
-    '''
-
-    @property
-    def stl_include_dir(self):
-        return join(self.stl_lib_source.format(ctx=self.ctx), 'include')
-
-    def get_stl_lib_dir(self, arch):
-        return join(
-            self.stl_lib_source.format(ctx=self.ctx), 'libs', arch.arch
-        )
-
     def get_stl_library(self, arch):
         return join(
-            self.get_stl_lib_dir(arch),
+            arch.ndk_lib_dir,
             'lib{name}.so'.format(name=self.stl_lib_name),
         )
 
@@ -507,20 +491,6 @@ class Recipe(with_metaclass(RecipeMeta)):
         if arch is None:
             arch = self.filtered_archs[0]
         env = arch.get_env(with_flags_in_cc=with_flags_in_cc)
-
-        if self.need_stl_shared:
-            env['CPPFLAGS'] = env.get('CPPFLAGS', '')
-            env['CPPFLAGS'] += ' -I{}'.format(self.stl_include_dir)
-
-            env['CXXFLAGS'] = env['CFLAGS'] + ' -frtti -fexceptions'
-
-            if with_flags_in_cc:
-                env['CXX'] += ' -frtti -fexceptions'
-
-            env['LDFLAGS'] += ' -L{}'.format(self.get_stl_lib_dir(arch))
-            env['LIBS'] = env.get('LIBS', '') + " -l{}".format(
-                self.stl_lib_name
-            )
         return env
 
     def prebuild_arch(self, arch):
@@ -818,7 +788,7 @@ class NDKRecipe(Recipe):
         env = self.get_recipe_env(arch)
         with current_directory(self.get_build_dir(arch.arch)):
             shprint(
-                sh.ndk_build,
+                sh.Command(join(self.ctx.ndk_dir, "ndk-build")),
                 'V=1',
                 'NDK_DEBUG=' + ("1" if self.ctx.build_as_debuggable else "0"),
                 'APP_PLATFORM=android-' + str(self.ctx.ndk_api),
@@ -1142,7 +1112,6 @@ class CythonRecipe(PythonRecipe):
         env['LDSHARED'] = env['CC'] + ' -shared'
         # shprint(sh.whereis, env['LDSHARED'], _env=env)
         env['LIBLINK'] = 'NOTNONE'
-        env['NDKPLATFORM'] = self.ctx.ndk_sysroot  # FIXME?
         if self.ctx.copy_libs:
             env['COPYLIBS'] = '1'
 
