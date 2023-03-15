@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
 import android.app.Activity;
@@ -25,6 +27,7 @@ import android.os.PowerManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.widget.ImageView;
+import android.widget.ViewSwitcher;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -54,7 +57,9 @@ public class PythonActivity extends Activity {
     public static boolean mBrokenLibraries;
 
     protected static ViewGroup mLayout;
+    protected static ViewSwitcher mWebViewSwitcher;
     public static WebView mWebView;
+    public static WebView mLoadingWebView;
 
     protected static Thread mPythonThread;
 
@@ -65,6 +70,14 @@ public class PythonActivity extends Activity {
     public String getAppRoot() {
         String app_root =  getFilesDir().getAbsolutePath() + "/app";
         return app_root;
+    }
+
+    public WebView getMainWebView() {
+        return mWebView;
+    }
+
+    public WebView getLoadingWebView() {
+        return mLoadingWebView;
     }
 
     public String getEntryPoint(String search_dir) {
@@ -88,6 +101,7 @@ public class PythonActivity extends Activity {
         // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
         mWebView = null;
         mLayout = null;
+        mWebViewSwitcher = null;
         mBrokenLibraries = false;
     }
 
@@ -100,6 +114,21 @@ public class PythonActivity extends Activity {
         this.mActivity = this;
         this.showLoadingScreen();
         new UnpackFilesTask().execute(getAppRoot());
+    }
+
+    public boolean shouldLoadUri(Uri uri) {
+        return uri.getScheme().equals("file") || uri.getHost().equals("127.0.0.1");
+    }
+
+    public boolean tryOpenExternalLink(String uriString) {
+        Uri uri = Uri.parse(uriString);
+        if (mOpenExternalLinksInBrowser && !shouldLoadUri(uri)) {
+            Intent i = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(i);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private class UnpackFilesTask extends AsyncTask<String, Void, String> {
@@ -158,38 +187,59 @@ public class PythonActivity extends Activity {
             // Set up the webview
             String app_root_dir = getAppRoot();
 
+            mLayout = new AbsoluteLayout(PythonActivity.mActivity) {
+                @Override
+                protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+                    return new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+                }
+            };
+            setContentView(mLayout);
+
+            /* TODO: It would be nice to do a crossfade animation here */
+            mWebViewSwitcher = new ViewSwitcher(PythonActivity.mActivity);
+            mLayout.addView(mWebViewSwitcher);
+
+            mLoadingWebView = new WebView(PythonActivity.mActivity);
+            mLoadingWebView.getSettings().setJavaScriptEnabled(true);
+            mLoadingWebView.getSettings().setDomStorageEnabled(true);
+            mLoadingWebView.getSettings().setAllowFileAccessFromFileURLs(true);
+            mLoadingWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+            mLoadingWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+            mLoadingWebView.loadUrl("file:///android_asset/_load.html");
+            mLoadingWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    return tryOpenExternalLink(url);
+                }
+            });
+            mWebViewSwitcher.addView(mLoadingWebView, 0);
+
             mWebView = new WebView(PythonActivity.mActivity);
             mWebView.getSettings().setJavaScriptEnabled(true);
             mWebView.getSettings().setDomStorageEnabled(true);
             mWebView.getSettings().setAllowFileAccessFromFileURLs(true);
             mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
             mWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);
-            mWebView.loadUrl("file:///android_asset/_load.html");
-
-            mWebView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
             mWebView.setWebViewClient(new WebViewClient() {
-                    @Override
-                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                        Uri u = Uri.parse(url);
-                        if (mOpenExternalLinksInBrowser) {
-                            if (!(u.getScheme().equals("file") || u.getHost().equals("127.0.0.1"))) {
-                                Intent i = new Intent(Intent.ACTION_VIEW, u);
-                                startActivity(i);
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    return tryOpenExternalLink(url);
+                }
 
-                    @Override
-                    public void onPageFinished(WebView view, String url) {
-                        CookieManager.getInstance().flush();
-                    }
-                });
-            mLayout = new AbsoluteLayout(PythonActivity.mActivity);
-            mLayout.addView(mWebView);
-
-            setContentView(mLayout);
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    Log.i(TAG, "MainPythonWebViewClient onPageFinished");
+                    displayMainWebView();
+                    // FIXME: We should use postVisualStateCallback here...
+                    // mWebView.postVisualStateCallback(123, new WebView.VisualStateCallback() {
+                    //     @Override
+                    //     public void onComplete(long requestId) {
+                    //         displayMainWebView();
+                    //     }
+                    // });
+                }
+            });
+            mWebViewSwitcher.addView(mWebView, 1);
 
             String mFilesDirectory = mActivity.getFilesDir().getAbsolutePath();
             String entry_point = getEntryPoint(app_root_dir);
@@ -254,6 +304,26 @@ public class PythonActivity extends Activity {
 
         Log.i(TAG, "Opening URL: " + url);
         mActivity.runOnUiThread(new LoadUrl(url));
+    }
+
+    public static void displayLoadingWebView() {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "displayLoadingWebView");
+                mWebViewSwitcher.setDisplayedChild(0);
+            }
+        });
+    }
+
+    public static void displayMainWebView() {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "displayMainWebView");
+                mWebViewSwitcher.setDisplayedChild(1);
+            }
+        });
     }
 
     public static void enableZoom() {
