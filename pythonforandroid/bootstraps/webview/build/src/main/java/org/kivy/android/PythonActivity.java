@@ -221,22 +221,27 @@ public class PythonActivity extends Activity {
             mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
             mWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);
             mWebView.setWebViewClient(new WebViewClient() {
+                boolean isRedirected = false;
+
+                @Override
+                public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                    isRedirected = false;
+                }
+
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    isRedirected = true;
                     return tryOpenExternalLink(url);
                 }
 
                 @Override
                 public void onPageFinished(WebView view, String url) {
-                    Log.i(TAG, "MainPythonWebViewClient onPageFinished");
+                    if (isRedirected) {
+                        return;
+                    }
+
+                    Log.v(TAG, "MainPythonWebViewClient loading finished");
                     displayMainWebView();
-                    // FIXME: We should use postVisualStateCallback here...
-                    // mWebView.postVisualStateCallback(123, new WebView.VisualStateCallback() {
-                    //     @Override
-                    //     public void onComplete(long requestId) {
-                    //         displayMainWebView();
-                    //     }
-                    // });
                 }
             });
             mWebViewSwitcher.addView(mWebView, 1);
