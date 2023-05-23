@@ -97,6 +97,11 @@ options (this list may not be exhaustive):
   added to the ``<manifest><application>`` tag of AndroidManifest.xml.
 - ``--manifest-placeholders``: Inject build variables into the manifest
   via the ``manifestPlaceholders`` property.
+- ``--debug-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the debug buildType.
+- ``--release-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the release
+  buildType.
 - ``--enable-google-services``: Enable the Google Services Gradle plugin.
   This option requires a ``google-services.json`` file in root of the
   project directory.
@@ -172,6 +177,11 @@ ready.
   added to the ``<manifest><application>`` tag of AndroidManifest.xml.
 - ``--manifest-placeholders``: Inject build variables into the manifest
   via the ``manifestPlaceholders`` property.
+- ``--debug-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the debug buildType.
+- ``--release-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the release
+  buildType.
 - ``--enable-google-services``: Enable the Google Services Gradle plugin.
   This option requires a ``google-services.json`` file in root of the
   project directory.

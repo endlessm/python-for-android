@@ -876,6 +876,18 @@ tools directory of the Android SDK.
     ap.add_argument('--manifest-placeholders', dest='manifest_placeholders',
                     default='[:]', help=('Inject build variables into the manifest '
                                          'via the manifestPlaceholders property'))
+    ap.add_argument('--debug-manifest-placeholders',
+                    dest='debug_manifest_placeholders',
+                    default='[:]',
+                    help=('Inject build variables into the manifest '
+                          'via the manifestPlaceholders property '
+                          'in the debug buildType'))
+    ap.add_argument('--release-manifest-placeholders',
+                    dest='release_manifest_placeholders',
+                    default='[:]',
+                    help=('Inject build variables into the manifest '
+                          'via the manifestPlaceholders property '
+                          'in the release buildType'))
     ap.add_argument('--service-class-name', dest='service_class_name', default=DEFAULT_PYTHON_SERVICE_JAVA_CLASS,
                     help='Use that parameter if you need to implement your own PythonServive Java class')
     ap.add_argument('--activity-class-name', dest='activity_class_name', default=DEFAULT_PYTHON_ACTIVITY_JAVA_CLASS,
