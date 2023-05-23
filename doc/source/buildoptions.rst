@@ -166,6 +166,8 @@ ready.
 - ``add-source``: Add a source directory to the app's Java code.
 - ``--port``: The port on localhost that the WebView will
   access. Defaults to 5000.
+- ``--extra-manifest-xml``: Extra xml to write directly inside the
+  ``<manifest>`` element of AndroidManifest.xml.
 - ``--manifest-placeholders``: Inject build variables into the manifest
   via the ``manifestPlaceholders`` property.
 - ``--enable-google-services``: Enable the Google Services Gradle plugin.
