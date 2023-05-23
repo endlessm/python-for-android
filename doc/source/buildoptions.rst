@@ -168,6 +168,8 @@ ready.
   access. Defaults to 5000.
 - ``--extra-manifest-xml``: Extra xml to write directly inside the
   ``<manifest>`` element of AndroidManifest.xml.
+- ``--extra-manifest-application-arguments``: Extra arguments to be
+  added to the ``<manifest><application>`` tag of AndroidManifest.xml.
 - ``--manifest-placeholders``: Inject build variables into the manifest
   via the ``manifestPlaceholders`` property.
 - ``--enable-google-services``: Enable the Google Services Gradle plugin.
