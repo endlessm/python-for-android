@@ -36,6 +36,8 @@
     <uses-permission android:name="com.android.vending.BILLING" />
     {% endif %}
 
+    {{ args.extra_manifest_xml }}
+
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under src matching the package, e.g.
          	src/com/gamemaker/game/MyGame.java
@@ -54,6 +56,7 @@
                  android:usesCleartextTraffic="true"
                  android:extractNativeLibs="true"
                  {% if debug %}android:debuggable="true"{% endif %}
+                 {{ args.extra_manifest_application_arguments }}
                  >
         {% for l in args.android_used_libs %}
         <uses-library android:name="{{ l }}" />

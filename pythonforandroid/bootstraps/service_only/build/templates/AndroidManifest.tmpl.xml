@@ -35,6 +35,8 @@
     <uses-permission android:name="com.android.vending.BILLING" />
     {% endif %}
 
+    {{ args.extra_manifest_xml }}
+
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under src matching the package, e.g.
          	src/com/gamemaker/game/MyGame.java
@@ -51,7 +53,9 @@
                  {% if args.backup_rules %}android:fullBackupContent="@xml/{{ args.backup_rules }}"{% endif %}
                  android:theme="{{args.android_apptheme}}{% if not args.window %}.Fullscreen{% endif %}"
                  android:hardwareAccelerated="true"
-                 android:extractNativeLibs="true" >
+                 android:extractNativeLibs="true"
+                 {{ args.extra_manifest_application_arguments }}
+                 >
         {% for l in args.android_used_libs %}
         <uses-library android:name="{{ l }}" />
         {% endfor %}

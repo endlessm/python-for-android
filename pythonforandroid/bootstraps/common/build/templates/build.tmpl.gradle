@@ -94,6 +94,7 @@ android {
 
     buildTypes {
         debug {
+            manifestPlaceholders = {{ args.debug_manifest_placeholders }}
             {% if args.enable_crashlytics_native_symbol_upload -%}
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
@@ -105,6 +106,7 @@ android {
             {% if args.sign -%}
             signingConfig signingConfigs.release
             {%- endif %}
+            manifestPlaceholders = {{ args.release_manifest_placeholders }}
             {% if args.enable_crashlytics_native_symbol_upload -%}
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true

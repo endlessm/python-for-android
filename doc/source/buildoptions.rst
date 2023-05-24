@@ -91,6 +91,17 @@ options (this list may not be exhaustive):
 - ``--add-source``: Add a source directory to the app's Java code.
 - ``--no-compile-pyo``: Do not optimise .py files to .pyo.
 - ``--enable-androidx``: Enable AndroidX support library.
+- ``--extra-manifest-xml``: Extra xml to write directly inside the
+  ``<manifest>`` element of AndroidManifest.xml.
+- ``--extra-manifest-application-arguments``: Extra arguments to be
+  added to the ``<manifest><application>`` tag of AndroidManifest.xml.
+- ``--manifest-placeholders``: Inject build variables into the manifest
+  via the ``manifestPlaceholders`` property.
+- ``--debug-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the debug buildType.
+- ``--release-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the release
+  buildType.
 - ``--enable-google-services``: Enable the Google Services Gradle plugin.
   This option requires a ``google-services.json`` file in root of the
   project directory.
@@ -160,6 +171,17 @@ ready.
 - ``add-source``: Add a source directory to the app's Java code.
 - ``--port``: The port on localhost that the WebView will
   access. Defaults to 5000.
+- ``--extra-manifest-xml``: Extra xml to write directly inside the
+  ``<manifest>`` element of AndroidManifest.xml.
+- ``--extra-manifest-application-arguments``: Extra arguments to be
+  added to the ``<manifest><application>`` tag of AndroidManifest.xml.
+- ``--manifest-placeholders``: Inject build variables into the manifest
+  via the ``manifestPlaceholders`` property.
+- ``--debug-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the debug buildType.
+- ``--release-manifest-placeholders``: Inject build variables into the
+  manifest via the manifestPlaceholders property in the release
+  buildType.
 - ``--enable-google-services``: Enable the Google Services Gradle plugin.
   This option requires a ``google-services.json`` file in root of the
   project directory.
