@@ -110,6 +110,9 @@ options (this list may not be exhaustive):
 - ``--enable-crashlytics-native-symbol-upload``: Enable processing and uploading
   of native symbols to Firebase servers. This flag must be enabled to see
   properly-symbolicated native stack traces in the Crashlytics dashboard.
+- ``--res-values``: Resource value files to include in the app such as
+  ``colors.xml`` and ``styles.xml``. This option can be specified multiple
+  times.
 
 
 webview
@@ -190,6 +193,9 @@ ready.
 - ``--enable-crashlytics-native-symbol-upload``: Enable processing and uploading
   of native symbols to Firebase servers. This flag must be enabled to see
   properly-symbolicated native stack traces in the Crashlytics dashboard.
+- ``--res-values``: Resource value files to include in the app such as
+  ``colors.xml`` and ``styles.xml``. This option can be specified multiple
+  times.
 
 
 service_library
@@ -220,6 +226,9 @@ systems and frameworks.
   project directory.
 - ``--add-gradle-plugin``: Add a plugin for gradle. The format of the option
   is ``<plugin-id>:<classpath>``. The option can be specified multiple times.
+- ``--res-values``: Resource value files to include in the app such as
+  ``colors.xml`` and ``styles.xml``. This option can be specified multiple
+  times.
 
 
 Requirements blacklist (APK size optimization)
