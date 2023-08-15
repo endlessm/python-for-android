@@ -997,7 +997,7 @@ class ToolchainCL:
         fix_args = ('--dir', '--private', '--add-jar', '--add-source',
                     '--whitelist', '--blacklist', '--presplash', '--icon',
                     '--icon-bg', '--icon-fg', '--fileprovider-paths',
-                    '--google-services-json')
+                    '--google-services-json', '--res-values')
         unknown_args = args.unknown_args
 
         for asset in args.assets:

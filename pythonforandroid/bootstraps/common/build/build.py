@@ -522,6 +522,13 @@ main.py that loads it.''')
                 xmlpath = join(args.private, xmlpath)
             shutil.copy(xmlpath, res_xml_dir)
 
+    # Copy res_values files to src/main/res/values
+    res_values_dir = join(res_dir, 'values')
+    if args.res_values:
+        ensure_dir(res_values_dir)
+        for xmlpath in args.res_values:
+            shutil.copy(xmlpath, res_values_dir)
+
     # Render out android manifest:
     manifest_path = "src/main/AndroidManifest.xml"
     render_args = {
@@ -832,6 +839,8 @@ tools directory of the Android SDK.
                           'directory'))
     ap.add_argument('--res_xml', dest='res_xmls', action='append', default=[],
                     help='Add files to res/xml directory (for example device-filters)', nargs='+')
+    ap.add_argument('--res-values', dest='res_values', action='append', default=[],
+                    help='Add files to res/values directory (for example styles.xml)')
     ap.add_argument('--with-billing', dest='billing_pubkey',
                     help='If set, the billing service will be added (not implemented)')
     ap.add_argument('--add-source', dest='extra_source_dirs', action='append',
